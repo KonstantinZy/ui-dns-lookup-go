@@ -1,20 +1,29 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"image/color"
+	"regexp"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
 const WINDOWHEIGHT = 400
 const WINDOWWIDTH = 800
 const WINDOWBORDER = 3
+
+var (
+	addres    *widget.Entry
+	searchBtn *widget.Button
+	progres   *widget.ProgressBarInfinite
+)
 
 func main() {
 	myApp := app.New()
@@ -38,16 +47,44 @@ func makeUI(w *fyne.Window) {
 	borderLeftCanvas.SetMinSize(fyne.NewSize(WINDOWBORDER, WINDOWHEIGHT))
 	mainCont := container.New(layout.NewBorderLayout(nil, borderBottomCanvas, borderLeftCanvas, borderRightCanvas), borderBottomCanvas, borderLeftCanvas, borderRightCanvas)
 
-	/* addres container */
-	addrCont := container.NewHBox()
-	addrCont.Add(canvas.NewText("Label", color.Opaque))
-	addrCont.Add(canvas.NewText("Addres", color.Opaque))
-	addrCont.Add(canvas.NewText("Button", color.Opaque))
+	/* addres + search container */
+	label := canvas.NewText("Addres for lookup:", color.Opaque)
+
+	addres = widget.NewEntry()
+	addres.Validator = func(val string) error {
+		re := regexp.MustCompile(`^(https*:\/\/)*[^\.]+?\.\w{2,}$`)
+		if !re.MatchString(val) {
+			return errors.New("wrong adres format")
+		}
+		return nil
+	}
+	addres.SetOnValidationChanged(func(err error) {
+		if err == nil {
+			searchBtn.Enable()
+		} else {
+			searchBtn.Disable()
+		}
+	})
+	addres.SetPlaceHolder("addres")
+
+	controlCont := container.NewHBox()
+	searchBtn = widget.NewButtonWithIcon("Lookup", theme.SearchIcon(), func() {
+		progres.Show()
+		progres.Start()
+		lookupAddr()
+	})
+	searchBtn.Disable()
+	controlCont.Add(searchBtn)
+	progres = widget.NewProgressBarInfinite()
+	progres.Hide()
+	controlCont.Add(progres)
+
+	addrCont := container.NewBorder(nil, nil, label, controlCont, addres)
 
 	/* tabs container sith results */
 	resContWrap := container.NewMax()
 	resCont := container.NewAppTabs(
-		container.NewTabItem("MX", widget.NewButton("MX", func() { fmt.Println("Tapped") })),
+		container.NewTabItem("MX", widget.NewLabel("MX")),
 		container.NewTabItem("A", widget.NewLabel("A")),
 		container.NewTabItem("NS", widget.NewLabel("NS")),
 	)
@@ -60,4 +97,10 @@ func makeUI(w *fyne.Window) {
 	mainCont.Add(gridCont)
 
 	(*w).SetContent(mainCont)
+}
+
+func lookupAddr() {
+	time.Sleep(time.Second * 5)
+	progres.Stop()
+	progres.Hide()
 }
