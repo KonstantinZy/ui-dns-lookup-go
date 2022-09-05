@@ -11,3 +11,8 @@
 ![Window](/screenshot/screenshot.png)
 
 ### Launch compiled version
+
+```
+chmod +x untarAndRun.sh && ./untarAndRun.sh
+```
+[How to launch in other OS](https://developer.fyne.io/started/packaging)
