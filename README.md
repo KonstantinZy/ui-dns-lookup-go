@@ -8,7 +8,7 @@
 
 ### Screenshot
 
-![Window](/screenshot/screenshot.png)
+![Window](/screen.png)
 
 ### Launch compiled version
 
