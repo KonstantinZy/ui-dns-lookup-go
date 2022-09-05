@@ -8,7 +8,7 @@ import (
 type DateEntry struct {
 	widget.Entry
 	focusLostFunc    func()
-	enterPressedFunc func(key *fyne.KeyEvent)
+	enterPressedFunc func()
 }
 
 func NewDateEntry() *DateEntry {
@@ -26,10 +26,14 @@ func (e *DateEntry) FocusLost() {
 	e.Entry.FocusLost()
 }
 
-func (e *DateEntry) SetOnEnter(f func(key *fyne.KeyEvent)) {
+func (e *DateEntry) SetOnEnter(f func()) {
 	e.enterPressedFunc = f
 }
 
 func (e *DateEntry) TypedKey(key *fyne.KeyEvent) {
-	e.enterPressedFunc(key)
+	if key.Name == fyne.KeyEnter || key.Name == fyne.KeyReturn {
+		e.enterPressedFunc()
+	} else {
+		e.Entry.TypedKey(key)
+	}
 }

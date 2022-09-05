@@ -16,8 +16,8 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/KonstantinZy/ui-dns-lookup-go/entry"
 	"github.com/KonstantinZy/ui-dns-lookup-go/tabs"
+	entry "github.com/KonstantinZy/ui-dns-lookup-go/ui"
 )
 
 const WINDOWHEIGHT = 400
@@ -62,7 +62,7 @@ func makeUI(w *fyne.Window) {
 	/* ----------- addres entry field ----------------- */
 	addres = entry.NewDateEntry()
 	addres.Validator = func(val string) error {
-		re := regexp.MustCompile(`^(https*:\/\/)*[^\.]+?\.\w{2,}$`)
+		re := regexp.MustCompile(`^[\w\.]+\.[a-z]{2,}$`)
 		if !re.MatchString(val) {
 			return errors.New("wrong addres format")
 		}
@@ -79,13 +79,9 @@ func makeUI(w *fyne.Window) {
 	addres.SetOnFocusLost(func() {
 		ValidateAndWriteStatus(addres)
 	})
-	addres.SetOnEnter(func(key *fyne.KeyEvent) {
-		if key.Name == fyne.KeyEnter || key.Name == fyne.KeyReturn {
-			if err := ValidateAndWriteStatus(addres); err == nil {
-				startLookup()
-			}
-		} else {
-			addres.Entry.TypedKey(key)
+	addres.SetOnEnter(func() {
+		if err := ValidateAndWriteStatus(addres); err == nil {
+			startLookup()
 		}
 	})
 
